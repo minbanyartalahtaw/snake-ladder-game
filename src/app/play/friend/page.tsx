@@ -3,7 +3,7 @@
 import CustomButton from "@/components/CustomButton";
 import GameBoard from "@/components/GameBoard";
 import { useState } from "react";
-import { rollDice, calculateNewPosition } from "@/utils/gameLogic";
+import { rollDice, animatePlayerMovement } from "@/utils/gameLogic";
 
 interface FriendGameState {
   currentPlayer: 1 | 2;
@@ -36,16 +36,37 @@ export default function PlayWithFriend() {
       gameState.currentPlayer === 1
         ? gameState.player1Position
         : gameState.player2Position;
-    const newPosition = calculateNewPosition(currentPosition, dice);
 
-    const won = newPosition === 100;
-
+    // Set dice value first
     setGameState((prev) => ({
       ...prev,
       diceValue: dice,
+      isRolling: false,
+    }));
+
+    // Animate movement step by step
+    const finalPosition = await animatePlayerMovement(
+      currentPosition,
+      dice,
+      (position) => {
+        setGameState((prev) => ({
+          ...prev,
+          ...(gameState.currentPlayer === 1
+            ? { player1Position: position }
+            : { player2Position: position }),
+        }));
+      },
+      400
+    );
+
+    const won = finalPosition === 100;
+
+    // Update final game state
+    setGameState((prev) => ({
+      ...prev,
       ...(gameState.currentPlayer === 1
-        ? { player1Position: newPosition }
-        : { player2Position: newPosition }),
+        ? { player1Position: finalPosition }
+        : { player2Position: finalPosition }),
       currentPlayer: won
         ? prev.currentPlayer
         : prev.currentPlayer === 1
@@ -56,7 +77,6 @@ export default function PlayWithFriend() {
           ? "player1-won"
           : "player2-won"
         : "playing",
-      isRolling: false,
     }));
   };
 

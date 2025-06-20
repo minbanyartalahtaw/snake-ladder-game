@@ -4,7 +4,7 @@ import CustomButton from "@/components/CustomButton";
 import GameBoard from "@/components/GameBoard";
 import { useState, useEffect } from "react";
 import { GameState } from "@/types/game";
-import { rollDice, calculateNewPosition } from "@/utils/gameLogic";
+import { rollDice, animatePlayerMovement } from "@/utils/gameLogic";
 
 export default function PlayWithBot() {
   const [gameState, setGameState] = useState<GameState>({
@@ -25,15 +25,33 @@ export default function PlayWithBot() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const dice = rollDice();
-    const newPosition = calculateNewPosition(gameState.playerPosition, dice);
-
+    
+    // Set dice value first
     setGameState((prev) => ({
       ...prev,
       diceValue: dice,
-      playerPosition: newPosition,
-      currentPlayer: newPosition === 100 ? "player" : "bot",
-      gameStatus: newPosition === 100 ? "won" : "playing",
       isRolling: false,
+    }));
+
+    // Animate movement step by step
+    const finalPosition = await animatePlayerMovement(
+      gameState.playerPosition,
+      dice,
+      (position) => {
+        setGameState((prev) => ({
+          ...prev,
+          playerPosition: position,
+        }));
+      },
+      400
+    );
+
+    // Update final game state
+    setGameState((prev) => ({
+      ...prev,
+      playerPosition: finalPosition,
+      currentPlayer: finalPosition === 100 ? "player" : "bot",
+      gameStatus: finalPosition === 100 ? "won" : "playing",
     }));
   };
 
@@ -44,15 +62,32 @@ export default function PlayWithBot() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     const dice = rollDice();
-    const newPosition = calculateNewPosition(gameState.botPosition, dice);
-
+    
+    // Set dice value first
     setGameState((prev) => ({
       ...prev,
       diceValue: dice,
-      botPosition: newPosition,
-      currentPlayer: newPosition === 100 ? "bot" : "player",
-      gameStatus: newPosition === 100 ? "lost" : "playing",
-      isRolling: false,
+    }));
+
+    // Animate bot movement step by step
+    const finalPosition = await animatePlayerMovement(
+      gameState.botPosition,
+      dice,
+      (position) => {
+        setGameState((prev) => ({
+          ...prev,
+          botPosition: position,
+        }));
+      },
+      400
+    );
+
+    // Update final game state
+    setGameState((prev) => ({
+      ...prev,
+      botPosition: finalPosition,
+      currentPlayer: finalPosition === 100 ? "bot" : "player",
+      gameStatus: finalPosition === 100 ? "lost" : "playing",
     }));
   };
 

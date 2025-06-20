@@ -53,3 +53,53 @@ export const getPositionFromCoords = (x: number, y: number): number => {
 
   return row * 10 + col + 1;
 };
+
+export const animatePlayerMovement = async (
+  currentPosition: number,
+  diceValue: number,
+  onPositionUpdate: (position: number) => void,
+  stepDelay: number = 300
+): Promise<number> => {
+  return new Promise((resolve) => {
+    let step = 0;
+    const animate = () => {
+      if (step < diceValue) {
+        step++;
+        const newPos = currentPosition + step;
+        
+        // Don't animate beyond 100
+        if (newPos > 100) {
+          resolve(currentPosition);
+          return;
+        }
+        
+        onPositionUpdate(newPos);
+        setTimeout(animate, stepDelay);
+      } else {
+        // Apply snakes and ladders after movement animation completes
+        const finalPosition = currentPosition + diceValue;
+        if (finalPosition > 100) {
+          resolve(currentPosition);
+          return;
+        }
+        
+        let actualFinalPosition = finalPosition;
+        
+        // Check for snakes
+        if (SNAKES[finalPosition]) {
+          actualFinalPosition = SNAKES[finalPosition];
+          setTimeout(() => onPositionUpdate(actualFinalPosition), stepDelay);
+        }
+        
+        // Check for ladders
+        if (LADDERS[finalPosition]) {
+          actualFinalPosition = LADDERS[finalPosition];
+          setTimeout(() => onPositionUpdate(actualFinalPosition), stepDelay);
+        }
+        
+        resolve(actualFinalPosition);
+      }
+    };
+    animate();
+  });
+};
