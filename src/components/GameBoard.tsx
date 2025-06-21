@@ -14,6 +14,7 @@ interface Player {
 
 interface GameBoardProps {
   players: Player[];
+
 }
 
 interface AnimatedPosition {
@@ -96,7 +97,7 @@ export default function GameBoard({ players }: GameBoardProps) {
         alt="Snake and Ladder Board"
         width={500}
         height={500}
-        className="w-full h-auto max-w-[500px]"
+        className={`w-full h-auto max-w-[500px] brightness-95`}
         priority
       />
 
@@ -110,19 +111,17 @@ export default function GameBoard({ players }: GameBoardProps) {
         return (
           <div
             key={player.id}
-            className={`absolute w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold shadow-xl z-10 ${
-              animPos.isAnimating
-                ? "transition-all duration-800 ease-in-out transform scale-110"
-                : "transition-all duration-300 ease-in-out"
-            }`}
+            className={`absolute w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold shadow-xl z-10 ${animPos.isAnimating
+              ? "transition-all duration-800 ease-in-out transform scale-110"
+              : "transition-all duration-300 ease-in-out"
+              }`}
             style={{
               left: `${animPos.x * 10 + 5}%`,
               top: `${animPos.y * 10 + 5}%`,
-              transform: `translate(-50%, -50%) ${
-                animPos.isAnimating
-                  ? "scale(1.2) rotate(10deg)"
-                  : "scale(1) rotate(0deg)"
-              }`,
+              transform: `translate(-50%, -50%) ${animPos.isAnimating
+                ? "scale(1.2) "
+                : "scale(1) rotate(0deg)"
+                }`,
               filter: animPos.isAnimating
                 ? `drop-shadow(0 0 10px ${player.color}80)`
                 : "none",

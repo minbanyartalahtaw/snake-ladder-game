@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isOnlyEmojis } from "@/utils/isOnlyEmoji";
 
+
+
 interface Player {
   id: number;
   name: string;
@@ -48,6 +50,7 @@ export default function PlayWithFriends({
   const playerNumber = parseInt(resolvedParams.playerNumber);
   const isSinglePlayer = playerNumber === 1;
 
+  const [focusValue, setFocusValue] = useState<number>(0);
   const [gameState, setGameState] = useState<MultiPlayerGameState>({
     players: [],
     currentPlayerIndex: 0,
@@ -83,7 +86,9 @@ export default function PlayWithFriends({
 
     setGameState((prev) => ({ ...prev, isRolling: true }));
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const randomDelay = 2000 + Math.floor(Math.random() * 2000);
+
+    await new Promise((resolve) => setTimeout(resolve, randomDelay));
 
     const dice = rollDice();
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -131,6 +136,7 @@ export default function PlayWithFriends({
           : (prev.currentPlayerIndex + 1) % prev.players.length,
         gameStatus: won ? "won" : "playing",
         winnerId: won ? currentPlayer.id : null,
+        diceValue: null,
       };
     });
 
@@ -158,19 +164,15 @@ export default function PlayWithFriends({
     });
   };
 
-  const getCurrentPlayerColor = () => {
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    return currentPlayer?.color || "#00a3c4";
-  };
+
 
   if (gameState.players.length === 0) {
     return <div>Loading...</div>;
   }
 
-  console.log(gameState.players[gameState.currentPlayerIndex].color)
+  //console.log(gameState.players[gameState.currentPlayerIndex].color)
 
-  const isCurrentPlayerBot =
-    gameState.players[gameState.currentPlayerIndex]?.isBot;
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -210,60 +212,68 @@ export default function PlayWithFriends({
                         </p>
                       </div>
 
-                      <div className="ml-2 sm:ml-4">
-                        <Popover>
-                          <PopoverTrigger>
-                            <div className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                              <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 cursor-pointer" />
+                      <div className="ml-2 sm:ml-4  flex items-center">
+                        {gameState.currentPlayerIndex === player.id - 1 && gameState.gameStatus === "playing" ? (
+                          <div className="flex items-center gap-2  cursor-pointer" onClick={handleRoll}>
+                            <div className={`text-xl scale-150 md:scale-200 ${gameState.isRolling ? 'animate-spin' : ''}`}>
+                              {gameState.diceValue === null ? "🎲" : gameState.diceValue}
                             </div>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[280px] sm:w-80">
-                            <div className="space-y-4 sm:space-y-6">
-                              <div className="space-y-2">
-                                <Label htmlFor={`name-${player.id}`} className="text-xs sm:text-sm font-medium">
-                                  Name
-                                </Label>
-                                <Input
-                                  id={`name-${player.id}`}
-                                  defaultValue={player.name}
-                                  className="h-8 sm:h-9 text-sm"
-                                  onChange={(e) => {
-                                    setGameState((prev) => ({
-                                      ...prev,
-                                      players: prev.players.map((p) =>
-                                        p.id === player.id
-                                          ? { ...p, name: e.target.value }
-                                          : p
-                                      ),
-                                    }));
-                                  }}
-                                />
+                          </div>
+                        ) : (
+                          <Popover>
+                            <PopoverTrigger>
+                              <div className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 cursor-pointer" />
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor={`emoji-${player.id}`} className="text-xs sm:text-sm font-medium mt-5">
-                                  Emoji
-                                </Label>
-                                <Input
-                                  id={`emoji-${player.id}`}
-                                  defaultValue={player.icon}
-                                  className="h-8 sm:h-9 text-sm"
-                                  onChange={(e) => {
-                                    if (isOnlyEmojis(e.target.value)) {
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[280px] sm:w-80">
+                              <div className="space-y-4 sm:space-y-6">
+                                <div className="space-y-2">
+                                  <Label htmlFor={`name-${player.id}`} className="text-xs sm:text-sm font-medium">
+                                    Name
+                                  </Label>
+                                  <Input
+                                    id={`name-${player.id}`}
+                                    defaultValue={player.name}
+                                    className="h-8 sm:h-9 text-sm"
+                                    onChange={(e) => {
                                       setGameState((prev) => ({
                                         ...prev,
                                         players: prev.players.map((p) =>
                                           p.id === player.id
-                                            ? { ...p, icon: e.target.value }
+                                            ? { ...p, name: e.target.value }
                                             : p
                                         ),
                                       }));
-                                    }
-                                  }}
-                                />
+                                    }}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`emoji-${player.id}`} className="text-xs sm:text-sm font-medium mt-5">
+                                    Emoji
+                                  </Label>
+                                  <Input
+                                    id={`emoji-${player.id}`}
+                                    defaultValue={player.icon}
+                                    className="h-8 sm:h-9 text-sm"
+                                    onChange={(e) => {
+                                      if (isOnlyEmojis(e.target.value)) {
+                                        setGameState((prev) => ({
+                                          ...prev,
+                                          players: prev.players.map((p) =>
+                                            p.id === player.id
+                                              ? { ...p, icon: e.target.value }
+                                              : p
+                                          ),
+                                        }));
+                                      }
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
+                            </PopoverContent>
+                          </Popover>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -277,6 +287,7 @@ export default function PlayWithFriends({
       <div className="flex-1 flex items-center justify-center p-1">
         <div className="max-w-2xl w-full flex flex-col items-center gap-8">
           <GameBoard players={gameState.players} />
+
 
 
           {gameState.gameStatus === "won" && (
@@ -331,60 +342,68 @@ export default function PlayWithFriends({
                         </p>
                       </div>
 
-                      <div className="ml-2 sm:ml-4">
-                        <Popover>
-                          <PopoverTrigger>
-                            <div className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                              <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 cursor-pointer" />
+                      <div className="ml-2 sm:ml-4  flex items-center">
+                        {gameState.currentPlayerIndex === player.id - 1 && gameState.gameStatus === "playing" ? (
+                          <div className="flex items-center gap-2  cursor-pointer" onClick={handleRoll}>
+                            <div className={`text-xl scale-150 md:scale-200 ${gameState.isRolling ? 'animate-spin' : ''}`}>
+                              {gameState.diceValue === null ? "🎲" : gameState.diceValue}
                             </div>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[280px] sm:w-80">
-                            <div className="space-y-4 sm:space-y-6">
-                              <div className="space-y-2">
-                                <Label htmlFor={`name-${player.id}`} className="text-xs sm:text-sm font-medium">
-                                  Name
-                                </Label>
-                                <Input
-                                  id={`name-${player.id}`}
-                                  defaultValue={player.name}
-                                  className="h-8 sm:h-9 text-sm"
-                                  onChange={(e) => {
-                                    setGameState((prev) => ({
-                                      ...prev,
-                                      players: prev.players.map((p) =>
-                                        p.id === player.id
-                                          ? { ...p, name: e.target.value }
-                                          : p
-                                      ),
-                                    }));
-                                  }}
-                                />
+                          </div>
+                        ) : (
+                          <Popover>
+                            <PopoverTrigger>
+                              <div className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 cursor-pointer" />
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor={`emoji-${player.id}`} className="text-xs sm:text-sm font-medium mt-5">
-                                  Emoji
-                                </Label>
-                                <Input
-                                  id={`emoji-${player.id}`}
-                                  defaultValue={player.icon}
-                                  className="h-8 sm:h-9 text-sm"
-                                  onChange={(e) => {
-                                    if (isOnlyEmojis(e.target.value)) {
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[280px] sm:w-80">
+                              <div className="space-y-4 sm:space-y-6">
+                                <div className="space-y-2">
+                                  <Label htmlFor={`name-${player.id}`} className="text-xs sm:text-sm font-medium">
+                                    Name
+                                  </Label>
+                                  <Input
+                                    id={`name-${player.id}`}
+                                    defaultValue={player.name}
+                                    className="h-8 sm:h-9 text-sm"
+                                    onChange={(e) => {
                                       setGameState((prev) => ({
                                         ...prev,
                                         players: prev.players.map((p) =>
                                           p.id === player.id
-                                            ? { ...p, icon: e.target.value }
+                                            ? { ...p, name: e.target.value }
                                             : p
                                         ),
                                       }));
-                                    }
-                                  }}
-                                />
+                                    }}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`emoji-${player.id}`} className="text-xs sm:text-sm font-medium mt-5">
+                                    Emoji
+                                  </Label>
+                                  <Input
+                                    id={`emoji-${player.id}`}
+                                    defaultValue={player.icon}
+                                    className="h-8 sm:h-9 text-sm"
+                                    onChange={(e) => {
+                                      if (isOnlyEmojis(e.target.value)) {
+                                        setGameState((prev) => ({
+                                          ...prev,
+                                          players: prev.players.map((p) =>
+                                            p.id === player.id
+                                              ? { ...p, icon: e.target.value }
+                                              : p
+                                          ),
+                                        }));
+                                      }
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
+                            </PopoverContent>
+                          </Popover>
+                        )}
                       </div>
                     </div>
                   </div>
