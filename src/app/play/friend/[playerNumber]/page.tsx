@@ -4,9 +4,19 @@ import CustomButton from "@/components/CustomButton";
 import GameBoard from "@/components/GameBoard";
 import { useState, useEffect, use } from "react";
 import { rollDice, animatePlayerMovement } from "@/utils/gameLogic";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Pencil } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { isOnlyEmojis } from "@/utils/isOnlyEmoji";
 
 interface Player {
   id: number;
+  name: string;
   position: number;
   color: string;
   icon: string;
@@ -54,6 +64,7 @@ export default function PlayWithFriends({
     for (let i = 0; i < Math.max(2, playerNumber); i++) {
       players.push({
         id: i + 1,
+        name: `Player ${i + 1}`,
         position: 0,
         color: PLAYER_CONFIGS[i % PLAYER_CONFIGS.length].color,
         icon: PLAYER_CONFIGS[i % PLAYER_CONFIGS.length].icon,
@@ -140,7 +151,7 @@ export default function PlayWithFriends({
     setGameState({
       players,
       currentPlayerIndex: 0,
-      diceValue: null,
+      diceValue: 0,
       gameStatus: "playing",
       winnerId: null,
       isRolling: false,
@@ -156,6 +167,8 @@ export default function PlayWithFriends({
     return <div>Loading...</div>;
   }
 
+  console.log(gameState.players[gameState.currentPlayerIndex].color)
+
   const isCurrentPlayerBot =
     gameState.players[gameState.currentPlayerIndex]?.isBot;
 
@@ -170,29 +183,88 @@ export default function PlayWithFriends({
               .map((player) => (
                 <div
                   key={player.id}
-                  className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
-                    gameState.currentPlayerIndex === player.id - 1 &&
+                  className={`flex items-center justify-between p-4 md:p-6 rounded-xl border-2 transition-all hover:shadow-md ${gameState.currentPlayerIndex === player.id - 1 &&
                     gameState.gameStatus === "playing"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200"
-                  }`}>
-                  <div className="flex items-center gap-4">
+                    ? "border-green-600 bg-green-100"
+                    : "border-gray-200"
+                    }`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-4 md:gap-6 w-full">
+                    {/* Player icon  */}
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center shadow-md"
-                      style={{ backgroundColor: player.color }}>
-                      <span className="text-white font-semibold text-3xl">
+                      className={`w-8 h-8 sm:w-10 sm:h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center`}
+                    >
+                      <span className="text-xl sm:text-2xl md:text-4xl">
                         {player.icon}
                       </span>
                     </div>
-                    <div>
-                      <p className="font-semibold text-lg text-slate-800">
-                        {player.isBot
-                          ? `Bot ${player.id}`
-                          : `Player ${player.id}`}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        Position: {player.position}
-                      </p>
+
+                    {/* Player Name and Details */}
+                    <div className="flex justify-between items-center w-full">
+                      <div className="space-y-0.5 sm:space-y-1">
+                        <p className="font-semibold text-sm sm:text-lg md:text-xl text-slate-800 truncate max-w-[100px] sm:max-w-full">
+                          {player.isBot ? `Bot` : player.name}
+                        </p>
+                        <p className="text-xs sm:text-sm md:text-base text-slate-500">
+                          Position: {player.position}
+                        </p>
+                      </div>
+
+                      <div className="ml-2 sm:ml-4">
+                        <Popover>
+                          <PopoverTrigger>
+                            <div className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                              <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 cursor-pointer" />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[280px] sm:w-80">
+                            <div className="space-y-4 sm:space-y-6">
+                              <div className="space-y-2">
+                                <Label htmlFor={`name-${player.id}`} className="text-xs sm:text-sm font-medium">
+                                  Name
+                                </Label>
+                                <Input
+                                  id={`name-${player.id}`}
+                                  defaultValue={player.name}
+                                  className="h-8 sm:h-9 text-sm"
+                                  onChange={(e) => {
+                                    setGameState((prev) => ({
+                                      ...prev,
+                                      players: prev.players.map((p) =>
+                                        p.id === player.id
+                                          ? { ...p, name: e.target.value }
+                                          : p
+                                      ),
+                                    }));
+                                  }}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`emoji-${player.id}`} className="text-xs sm:text-sm font-medium mt-5">
+                                  Emoji
+                                </Label>
+                                <Input
+                                  id={`emoji-${player.id}`}
+                                  defaultValue={player.icon}
+                                  className="h-8 sm:h-9 text-sm"
+                                  onChange={(e) => {
+                                    if (isOnlyEmojis(e.target.value)) {
+                                      setGameState((prev) => ({
+                                        ...prev,
+                                        players: prev.players.map((p) =>
+                                          p.id === player.id
+                                            ? { ...p, icon: e.target.value }
+                                            : p
+                                        ),
+                                      }));
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -205,6 +277,7 @@ export default function PlayWithFriends({
       <div className="flex-1 flex items-center justify-center p-1">
         <div className="max-w-2xl w-full flex flex-col items-center gap-8">
           <GameBoard players={gameState.players} />
+
 
           {gameState.gameStatus === "won" && (
             <div className="bg-white rounded-lg shadow-lg p-8 text-center border">
@@ -225,40 +298,94 @@ export default function PlayWithFriends({
       {/* Bottom Players Section */}
       <div className="bg-white shadow-sm  p-6">
         <div className="max-w-6xl mx-auto">
-          <div className={`grid grid-cols-${playerNumber > 3 ? 2 : 1} gap-4`}>
+          <div className={`grid grid-cols-${playerNumber > 3 ? 2 : 1}  gap-4 `}>
             {gameState.players
               .slice(Math.ceil(gameState.players.length / 2))
               .map((player) => (
                 <div
                   key={player.id}
-                  className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
-                    gameState.currentPlayerIndex === player.id - 1 &&
+                  className={`flex items-center justify-between p-4 md:p-6 rounded-xl border-2 transition-all hover:shadow-md ${gameState.currentPlayerIndex === player.id - 1 &&
                     gameState.gameStatus === "playing"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200"
-                  }`}>
-                  <div className="flex items-center gap-4">
+                    ? "border-green-600 bg-green-100"
+                    : "border-gray-200"
+                    }`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-4 md:gap-6 w-full">
+                    {/* Player icon  */}
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md ${
-                        gameState.currentPlayerIndex === player.id - 1 &&
-                        gameState.gameStatus === "playing"
-                          ? "border-2 border-blue-500 bg-blue-50"
-                          : ""
-                      }`}
-                      style={{ backgroundColor: player.color }}>
-                      <span className="text-white font-semibold text-3xl">
+                      className={`w-8 h-8 sm:w-10 sm:h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center`}
+                    >
+                      <span className="text-xl sm:text-2xl md:text-4xl">
                         {player.icon}
                       </span>
                     </div>
-                    <div>
-                      <p className="font-semibold text-lg text-slate-800">
-                        {player.isBot
-                          ? `Bot ${player.id}`
-                          : `Player ${player.id}`}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        Position: {player.position}
-                      </p>
+
+                    {/* Player Name and Details */}
+                    <div className="flex justify-between items-center w-full">
+                      <div className="space-y-0.5 sm:space-y-1">
+                        <p className="font-semibold text-sm sm:text-lg md:text-xl text-slate-800 truncate max-w-[100px] sm:max-w-full">
+                          {player.isBot ? `Bot` : player.name}
+                        </p>
+                        <p className="text-xs sm:text-sm md:text-base text-slate-500">
+                          Position: {player.position}
+                        </p>
+                      </div>
+
+                      <div className="ml-2 sm:ml-4">
+                        <Popover>
+                          <PopoverTrigger>
+                            <div className="p-1 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                              <Pencil className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 cursor-pointer" />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[280px] sm:w-80">
+                            <div className="space-y-4 sm:space-y-6">
+                              <div className="space-y-2">
+                                <Label htmlFor={`name-${player.id}`} className="text-xs sm:text-sm font-medium">
+                                  Name
+                                </Label>
+                                <Input
+                                  id={`name-${player.id}`}
+                                  defaultValue={player.name}
+                                  className="h-8 sm:h-9 text-sm"
+                                  onChange={(e) => {
+                                    setGameState((prev) => ({
+                                      ...prev,
+                                      players: prev.players.map((p) =>
+                                        p.id === player.id
+                                          ? { ...p, name: e.target.value }
+                                          : p
+                                      ),
+                                    }));
+                                  }}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`emoji-${player.id}`} className="text-xs sm:text-sm font-medium mt-5">
+                                  Emoji
+                                </Label>
+                                <Input
+                                  id={`emoji-${player.id}`}
+                                  defaultValue={player.icon}
+                                  className="h-8 sm:h-9 text-sm"
+                                  onChange={(e) => {
+                                    if (isOnlyEmojis(e.target.value)) {
+                                      setGameState((prev) => ({
+                                        ...prev,
+                                        players: prev.players.map((p) =>
+                                          p.id === player.id
+                                            ? { ...p, icon: e.target.value }
+                                            : p
+                                        ),
+                                      }));
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -266,27 +393,7 @@ export default function PlayWithFriends({
           </div>
 
           {/* Dice and Roll Button - Center */}
-          <div className="flex items-center justify-center gap-6 mt-5">
-            <div className="text-center">
-              <CustomButton
-                onClick={handleRoll}
-                disabled={
-                  gameState.isRolling ||
-                  gameState.gameStatus !== "playing" ||
-                  isCurrentPlayerBot
-                }
-                style={{
-                  backgroundColor: getCurrentPlayerColor(),
-                  borderColor: getCurrentPlayerColor(),
-                }}>
-                {gameState.isRolling
-                  ? "Rolling..."
-                  : isCurrentPlayerBot
-                  ? "Bot's Turn"
-                  : `Player ${gameState.currentPlayerIndex + 1} Roll`}
-              </CustomButton>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
