@@ -9,16 +9,26 @@ export default function Home() {
           🐍 Snake & Ladder
         </h1>
         <p className="text-slate-600 mb-12">Choose your game mode</p>
-        
-        <div className="space-y-4">
-          <Link href="/play/friend" className="block">
+
+        <div className="grid grid-cols-2 gap-1">
+          <Link href="/play/friend/1" className="block">
             <CustomButton className="w-full py-4 text-lg">
-              👥 Play With Friends
+              1 Player
             </CustomButton>
           </Link>
-          <Link href="/play/bot" className="block">
+          <Link href="/play/friend/2" className="block">
             <CustomButton className="w-full py-4 text-lg">
-              🤖 Play With Bot
+              2 Player
+            </CustomButton>
+          </Link>
+          <Link href="/play/friend/3" className="block">
+            <CustomButton className="w-full py-4 text-lg">
+              3 Player
+            </CustomButton>
+          </Link>
+          <Link href="/play/friend/4" className="block">
+            <CustomButton className="w-full py-4 text-lg">
+              4 Player
             </CustomButton>
           </Link>
         </div>

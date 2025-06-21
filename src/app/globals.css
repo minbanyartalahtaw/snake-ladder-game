@@ -5,6 +5,10 @@
   --foreground: #1e293b;
   --accent: #3b82f6;
   --secondary: #ef4444;
+  --player1: #00a3c4;
+  --player2: #f56565;
+  --player3: #805ad5;
+  --player4: #1a202c;
 }
 
 @theme inline {

@@ -4,9 +4,16 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getBoardPosition } from "@/utils/gameLogic";
 
+interface Player {
+  id: number;
+  position: number;
+  color: string;
+  icon: string;
+  isBot: boolean;
+}
+
 interface GameBoardProps {
-  playerPosition: number;
-  botPosition: number;
+  players: Player[];
 }
 
 interface AnimatedPosition {
@@ -15,52 +22,72 @@ interface AnimatedPosition {
   isAnimating: boolean;
 }
 
-export default function GameBoard({
-  playerPosition,
-  botPosition,
-}: GameBoardProps) {
-  const [playerAnimPos, setPlayerAnimPos] = useState<AnimatedPosition>({
-    x: 0,
-    y: 9,
-    isAnimating: false,
-  });
-  const [botAnimPos, setBotAnimPos] = useState<AnimatedPosition>({
-    x: 0,
-    y: 9,
-    isAnimating: false,
-  });
+export default function GameBoard({ players }: GameBoardProps) {
+  const [playerAnimPositions, setPlayerAnimPositions] = useState<
+    Record<number, AnimatedPosition>
+  >({});
+
+  // Initialize animation positions for all players
+  useEffect(() => {
+    const initialPositions: Record<number, AnimatedPosition> = {};
+    players.forEach((player) => {
+      const coords = getBoardPosition(player.position);
+      initialPositions[player.id] = {
+        x: coords.x,
+        y: coords.y,
+        isAnimating: false,
+      };
+    });
+    setPlayerAnimPositions(initialPositions);
+  }, []);
 
   // Animate player position changes
   useEffect(() => {
-    const newCoords = getBoardPosition(playerPosition);
-    setPlayerAnimPos((prev) => ({
-      ...newCoords,
-      isAnimating: prev.x !== newCoords.x || prev.y !== newCoords.y,
-    }));
+    const timers: Record<number, NodeJS.Timeout> = {};
 
-    // Reset animation state after animation completes
-    const timer = setTimeout(() => {
-      setPlayerAnimPos((prev) => ({ ...prev, isAnimating: false }));
-    }, 800);
+    players.forEach((player) => {
+      const newCoords = getBoardPosition(player.position);
+      const prevPos = playerAnimPositions[player.id];
 
-    return () => clearTimeout(timer);
-  }, [playerPosition]);
+      // Only animate if position actually changed
+      if (prevPos && (prevPos.x !== newCoords.x || prevPos.y !== newCoords.y)) {
+        setPlayerAnimPositions((prev) => ({
+          ...prev,
+          [player.id]: {
+            ...newCoords,
+            isAnimating: true,
+          },
+        }));
 
-  // Animate bot position changes
-  useEffect(() => {
-    const newCoords = getBoardPosition(botPosition);
-    setBotAnimPos((prev) => ({
-      ...newCoords,
-      isAnimating: prev.x !== newCoords.x || prev.y !== newCoords.y,
-    }));
+        // Clear any existing timer for this player
+        if (timers[player.id]) {
+          clearTimeout(timers[player.id]);
+        }
 
-    // Reset animation state after animation completes
-    const timer = setTimeout(() => {
-      setBotAnimPos((prev) => ({ ...prev, isAnimating: false }));
-    }, 800);
+        // Reset animation state after animation completes
+        timers[player.id] = setTimeout(() => {
+          setPlayerAnimPositions((prev) => ({
+            ...prev,
+            [player.id]: { ...prev[player.id], isAnimating: false },
+          }));
+        }, 800);
+      } else if (!prevPos) {
+        // Initialize position without animation
+        setPlayerAnimPositions((prev) => ({
+          ...prev,
+          [player.id]: {
+            ...newCoords,
+            isAnimating: false,
+          },
+        }));
+      }
+    });
 
-    return () => clearTimeout(timer);
-  }, [botPosition]);
+    // Cleanup timers on unmount or when players change
+    return () => {
+      Object.values(timers).forEach((timer) => clearTimeout(timer));
+    };
+  }, [players, playerAnimPositions]);
 
   return (
     <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
@@ -73,51 +100,37 @@ export default function GameBoard({
         priority
       />
 
-      {/* Player piece */}
-      {playerPosition > 0 && (
-        <div
-          className={`absolute w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold shadow-xl z-10 ${
-            playerAnimPos.isAnimating
-              ? "transition-all duration-800 ease-in-out transform scale-110"
-              : "transition-all duration-300 ease-in-out"
-          }`}
-          style={{
-            left: `${playerAnimPos.x * 10 + 5}%`,
-            top: `${playerAnimPos.y * 10 + 5}%`,
-            transform: `translate(-50%, -50%) ${
-              playerAnimPos.isAnimating
-                ? "scale(1.2) rotate(10deg)"
-                : "scale(1)"
-            }`,
-            filter: playerAnimPos.isAnimating
-              ? "drop-shadow(0 0 10px rgba(59, 130, 246, 0.8))"
-              : "none",
-          }}>
-          <span className="animate-bounce">👤</span>
-        </div>
-      )}
+      {/* Player pieces */}
+      {players.map((player) => {
+        if (player.position <= 0) return null;
 
-      {/* Bot piece */}
-      {botPosition > 0 && (
-        <div
-          className={`absolute w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold shadow-xl z-10 ${
-            botAnimPos.isAnimating
-              ? "transition-all duration-800 ease-in-out transform scale-110"
-              : "transition-all duration-300 ease-in-out"
-          }`}
-          style={{
-            left: `${botAnimPos.x * 10 + 5}%`,
-            top: `${botAnimPos.y * 10 + 5}%`,
-            transform: `translate(-50%, -50%) ${
-              botAnimPos.isAnimating ? "scale(1.2) rotate(-10deg)" : "scale(1)"
-            }`,
-            filter: botAnimPos.isAnimating
-              ? "drop-shadow(0 0 10px rgba(239, 68, 68, 0.8))"
-              : "none",
-          }}>
-          <span className="animate-bounce">🤖</span>
-        </div>
-      )}
+        const animPos = playerAnimPositions[player.id];
+        if (!animPos) return null;
+
+        return (
+          <div
+            key={player.id}
+            className={`absolute w-10 h-10 rounded-full flex items-center justify-center text-2xl font-bold shadow-xl z-10 ${
+              animPos.isAnimating
+                ? "transition-all duration-800 ease-in-out transform scale-110"
+                : "transition-all duration-300 ease-in-out"
+            }`}
+            style={{
+              left: `${animPos.x * 10 + 5}%`,
+              top: `${animPos.y * 10 + 5}%`,
+              transform: `translate(-50%, -50%) ${
+                animPos.isAnimating
+                  ? "scale(1.2) rotate(10deg)"
+                  : "scale(1) rotate(0deg)"
+              }`,
+              filter: animPos.isAnimating
+                ? `drop-shadow(0 0 10px ${player.color}80)`
+                : "none",
+            }}>
+            <span className="animate-bounce">{player.icon}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }

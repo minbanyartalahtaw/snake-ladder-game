@@ -66,13 +66,13 @@ export const animatePlayerMovement = async (
       if (step < diceValue) {
         step++;
         const newPos = currentPosition + step;
-        
+
         // Don't animate beyond 100
         if (newPos > 100) {
           resolve(currentPosition);
           return;
         }
-        
+
         onPositionUpdate(newPos);
         setTimeout(animate, stepDelay);
       } else {
@@ -82,21 +82,23 @@ export const animatePlayerMovement = async (
           resolve(currentPosition);
           return;
         }
-        
+
         let actualFinalPosition = finalPosition;
-        
+
         // Check for snakes
         if (SNAKES[finalPosition]) {
           actualFinalPosition = SNAKES[finalPosition];
-          setTimeout(() => onPositionUpdate(actualFinalPosition), stepDelay);
+          // Apply snake effect immediately
+          onPositionUpdate(actualFinalPosition);
         }
-        
+
         // Check for ladders
         if (LADDERS[finalPosition]) {
           actualFinalPosition = LADDERS[finalPosition];
-          setTimeout(() => onPositionUpdate(actualFinalPosition), stepDelay);
+          // Apply ladder effect immediately
+          onPositionUpdate(actualFinalPosition);
         }
-        
+
         resolve(actualFinalPosition);
       }
     };
