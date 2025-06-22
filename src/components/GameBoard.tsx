@@ -40,6 +40,7 @@ export default function GameBoard({ players, brightness }: GameBoardProps) {
       };
     });
     setPlayerAnimPositions(initialPositions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Animate player position changes
