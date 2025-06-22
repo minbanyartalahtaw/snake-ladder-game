@@ -13,6 +13,7 @@ import { Pencil } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isOnlyEmojis } from "@/utils/isOnlyEmoji";
+import Image from "next/image";
 
 
 
@@ -167,7 +168,21 @@ export default function PlayWithFriends({
 
 
   if (gameState.players.length === 0) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+
+        <Image
+          src="/logo.png"
+          alt="Snake and Ladder Board"
+          width={100}
+          height={100}
+          className="w-full h-auto max-w-[100px] brightness-95 rounded-full  animate-spin"
+          priority
+        />
+        <p className="text-xl font-bold text-slate-800">Loading...</p>
+
+      </div>
+    );
   }
 
   //console.log(gameState.players[gameState.currentPlayerIndex].color)
