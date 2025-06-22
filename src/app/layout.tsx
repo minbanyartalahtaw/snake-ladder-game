@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Fredoka } from 'next/font/google';
+import { Fredoka } from "next/font/google";
 import "./globals.css";
 
 // Configure the font with the desired weights and subsets
-export const fredoka = Fredoka({
-  subsets: ['latin'],        // Specify the character subsets you need
-  weight: ['400', '500', '600', '700'], // Specify the font weights you want to use
-  display: 'swap',           // 'swap' is a good default for performance
-  variable: '--font-fredoka', // This creates a CSS variable for the font
+const fredoka = Fredoka({
+  subsets: ["latin"], // Specify the character subsets you need
+  weight: ["400", "500", "600", "700"], // Specify the font weights you want to use
+  display: "swap", // 'swap' is a good default for performance
+  variable: "--font-fredoka", // This creates a CSS variable for the font
 });
-
 
 export const metadata: Metadata = {
   title: "Snake & Ladder",
@@ -23,9 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${fredoka.variable}`}>
-        {children}
-      </body>
+      <body className={`${fredoka.variable}`}>{children}</body>
     </html>
   );
 }
