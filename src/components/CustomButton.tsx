@@ -22,11 +22,11 @@ export default function CustomButton({
 
   const variantClasses = {
     primary: disabled
-      ? "bg-gray-400 border-gray-400 text-gray-600 cursor-not-allowed"
-      : "bg-blue-500 border-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 shadow-md hover:shadow-lg",
+      ? "bg-gray-400  text-gray-600 cursor-not-allowed"
+      : "text-white  shadow-md hover:shadow-lg",
     secondary: disabled
-      ? "bg-gray-200 border-gray-300 text-gray-500 cursor-not-allowed"
-      : "bg-white border-gray-300 text-slate-700 hover:bg-gray-50 active:bg-gray-100 shadow-md hover:shadow-lg",
+      ? "bg-gray-200  text-gray-500 cursor-not-allowed"
+      : "bg-white  text-slate-700 hover:bg-gray-50 active:bg-gray-100 shadow-md hover:shadow-lg",
   };
 
   return (

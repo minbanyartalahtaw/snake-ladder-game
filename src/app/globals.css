@@ -86,7 +86,7 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-fredoka);
   margin: 0;
   padding: 0;
 }

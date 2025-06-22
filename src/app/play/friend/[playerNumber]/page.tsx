@@ -219,10 +219,10 @@ export default function PlayWithFriends({
                     {/* Player Name and Details */}
                     <div className="flex justify-between items-center w-full">
                       <div className="space-y-0.5 sm:space-y-1">
-                        <p className="font-semibold text-sm sm:text-lg md:text-xl text-slate-800 truncate max-w-[100px] sm:max-w-full">
+                        <p className={`text-[${player.color}] font-semibold text-sm sm:text-lg md:text-xl  truncate max-w-[100px] sm:max-w-full`}>
                           {player.isBot ? `Bot` : player.name}
                         </p>
-                        <p className="text-xs sm:text-sm md:text-base text-slate-500">
+                        <p className="text-xs md:text-sm hidden sm:flex text-slate-500">
                           Position: {player.position}
                         </p>
                       </div>
@@ -349,10 +349,10 @@ export default function PlayWithFriends({
                     {/* Player Name and Details */}
                     <div className="flex justify-between items-center w-full">
                       <div className="space-y-0.5 sm:space-y-1">
-                        <p className="font-semibold text-sm sm:text-lg md:text-xl text-slate-800 truncate max-w-[100px] sm:max-w-full">
+                        <p className={`text-[${player.color}] font-semibold text-sm sm:text-lg md:text-xl  truncate max-w-[100px] sm:max-w-full`}>
                           {player.isBot ? `Bot` : player.name}
                         </p>
-                        <p className="text-xs sm:text-sm md:text-base text-slate-500">
+                        <p className="text-xs md:text-sm hidden sm:flex text-slate-500">
                           Position: {player.position}
                         </p>
                       </div>

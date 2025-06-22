@@ -1,20 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Fredoka, Nunito } from "next/font/google";
+import { Fredoka } from 'next/font/google';
 import "./globals.css";
 
-const fontHeading = Fredoka({
-  subsets: ["latin"],
-  weight: ['400', '500', '600', '700'], // Specify the weights you'll use
-  variable: '--font-heading', // This creates a CSS variable
+// Configure the font with the desired weights and subsets
+export const fredoka = Fredoka({
+  subsets: ['latin'],        // Specify the character subsets you need
+  weight: ['400', '500', '600', '700'], // Specify the font weights you want to use
+  display: 'swap',           // 'swap' is a good default for performance
+  variable: '--font-fredoka', // This creates a CSS variable for the font
 });
 
-// For body text, positions, etc.
-const fontBody = Nunito({
-  subsets: ["latin"],
-  weight: ['400', '700'],
-  variable: '--font-body', // Another CSS variable
-});
 
 export const metadata: Metadata = {
   title: "Snake & Ladder",
@@ -28,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${fontHeading.variable} ${fontBody.variable} font-sans`}>
+      <body className={`${fredoka.variable}`}>
         {children}
       </body>
     </html>
